@@ -11,12 +11,13 @@ import java.util.StringTokenizer;
 public class UserMaker implements StepMaker {
 
     private static UserMaker maker;
-    public UserMaker getInstance() {
+    public static UserMaker getInstance() {
         if (maker == null) {
             maker = new UserMaker();
         }
         return maker;
     }
+    private UserMaker(){}    
 
     @Override
     public int getX() throws Exception{

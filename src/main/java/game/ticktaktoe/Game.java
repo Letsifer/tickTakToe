@@ -2,13 +2,18 @@ package game.ticktaktoe;
 
 import game.ticktaktoe.stepmakers.RandomMaker;
 import game.ticktaktoe.stepmakers.StepMaker;
+import game.ticktaktoe.stepmakers.UserMaker;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
 
 /**
  *
  * @author Евгений
  */
-//@Slf4j
+@Slf4j
 public class Game {
     
     @Setter
@@ -17,7 +22,7 @@ public class Game {
     private Drawer drawer;
 
     public Game() {
-        logic = new Logic();
+        logic = new Logic(4);
         drawer = new ConsoleDrawer(logic);
         maker = RandomMaker.getInstance(logic.getSize());
     }
@@ -25,35 +30,22 @@ public class Game {
     public StepEnd run() throws Exception {
         StepEnd end = StepEnd.NOT_END;
         boolean isFirst = true;
+        boolean isNonAfterMistake = true;
         do {
-            drawer.drawField();
+            if (isNonAfterMistake) drawer.drawField();
             try {
-                if (isFirst) {
-                    System.out.println("First player! ");
-                } else {
-                    System.out.println("Second player! ");
-                }
-                System.out.println("Enter y and x: ");
+                drawer.drawStep(isFirst);
                 int y = maker.getY(), x = maker.getX();
-                System.out.println(y + " " + x);
+                log.info(y + " " + x);
                 end = logic.makeStep(y, x, isFirst);
+                isNonAfterMistake = true;
                 isFirst = !isFirst;
             } catch (ArrayIndexOutOfBoundsException | IllegalArgumentException exception) {
-                System.err.println(exception);
-//                log.error(exception.getMessage());
+                log.info(Marker.ANY_MARKER, exception);
+                isNonAfterMistake = false;
             }            
         } while (end == StepEnd.NOT_END);
-        switch (end) {
-            case FIRST_PLAYER_WIN:
-                System.out.println("First victory");
-                break;
-            case SECOND_PLAYER_WIN:
-                System.out.println("Second victory");
-                break;
-            default:
-                System.out.println("draw");
-        }
-        drawer.drawField();
+        drawer.drawVictory(end);
         return end;
     }
     
